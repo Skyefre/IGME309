@@ -115,9 +115,11 @@ void AppClass::ProcessKeyboard(sf::Event a_event)
 		m_v3Color = glm::vec3(0.0f, 0.0f, 1.0f);
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
 		m_v3Color = glm::vec3(-1.0f, -1.0f, -1.0f);
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
+	 
+	//If C is pressed, change colors to their compliments
+	if (a_event.key.code == sf::Keyboard::Key::Num4)
 	{
-		
+		m_Comp = !m_Comp;
 	}
 }
 void AppClass::Display(void)
@@ -128,6 +130,9 @@ void AppClass::Display(void)
 	//read uniforms and send values
 	GLuint SolidColor = glGetUniformLocation(m_uShaderProgramID, "SolidColor");
 	glUniform3f(SolidColor, m_v3Color.r, m_v3Color.g, m_v3Color.b);
+
+	GLboolean Comp = glGetUniformLocation(m_uShaderProgramID, "Comp");
+	glUniform1i(Comp, m_Comp);
 
 	//draw content
 	glDrawArrays(GL_TRIANGLES, 0, 3);
