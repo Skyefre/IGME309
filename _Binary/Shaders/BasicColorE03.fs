@@ -19,7 +19,7 @@ void main()
 
 	if(Comp == true)
 	{
-		colorChange = vec3(1.0f, 1.0f, 1.0f) - colorChange);
+		colorChange = vec3(1.0f, 1.0f, 1.0f) - colorChange;
 
 	}
 	
