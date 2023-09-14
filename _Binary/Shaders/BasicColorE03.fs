@@ -10,7 +10,6 @@ out vec4 Fragment;
 void main()
 {
 	vec3 colorChange = Color;
-	Fragment = vec4(Color,1);
 	
 	if(SolidColor.r != -1.0 && SolidColor.g != -1.0 && SolidColor.b != -1.0)
 	{
@@ -20,7 +19,6 @@ void main()
 	if(Comp == true)
 	{
 		colorChange = vec3(1.0f, 1.0f, 1.0f) - colorChange;
-
 	}
 	
 	Fragment = vec4(colorChange, 1);

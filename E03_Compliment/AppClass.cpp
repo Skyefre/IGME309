@@ -116,7 +116,7 @@ void AppClass::ProcessKeyboard(sf::Event a_event)
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
 		m_v3Color = glm::vec3(-1.0f, -1.0f, -1.0f);
 	 
-	//If C is pressed, change colors to their compliments
+	//If 4 key is pressed, change colors to their compliments
 	if (a_event.key.code == sf::Keyboard::Key::Num4)
 	{
 		m_Comp = !m_Comp;
