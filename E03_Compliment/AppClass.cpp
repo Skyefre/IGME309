@@ -131,7 +131,8 @@ void AppClass::Display(void)
 	GLuint SolidColor = glGetUniformLocation(m_uShaderProgramID, "SolidColor");
 	glUniform3f(SolidColor, m_v3Color.r, m_v3Color.g, m_v3Color.b);
 
-	GLboolean Comp = glGetUniformLocation(m_uShaderProgramID, "Comp");
+	GLboolean+
+		Comp = glGetUniformLocation(m_uShaderProgramID, "Comp");
 	glUniform1i(Comp, m_Comp);
 
 	//draw content
