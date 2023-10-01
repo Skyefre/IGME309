@@ -61,7 +61,23 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	std::vector<vector3 > vertex;
+	GLfloat theta = 0;
+	GLfloat delta = static_cast<GLfloat>(2.0 * PI / static_cast<GLfloat>(a_nSubdivisions));
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		vector3 temp = vector3(cos(theta) * a_fRadius, sin(theta) * a_fRadius, 0.0f);
+		theta += delta;
+		vertex.push_back(temp);
+	}
+
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		//base of Cone
+		AddTri(vertex[(i + 1) % a_nSubdivisions] - vector3(0, 0, a_fHeight/2), vertex[i] - vector3(0, 0, a_fHeight / 2), ZERO_V3 - vector3(0, 0, a_fHeight / 2));
+		//sides of Cone
+		AddTri(ZERO_V3 + vector3(0, 0, a_fHeight/2), vertex[i] - vector3(0, 0, a_fHeight / 2), vertex[(i + 1) % a_nSubdivisions] - vector3(0, 0, a_fHeight / 2));
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -85,7 +101,25 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	std::vector<vector3 > vertex;
+	GLfloat theta = 0;
+	GLfloat delta = static_cast<GLfloat>(2.0 * PI / static_cast<GLfloat>(a_nSubdivisions));
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		vector3 temp = vector3(cos(theta) * a_fRadius, sin(theta) * a_fRadius, 0.0f);
+		theta += delta;
+		vertex.push_back(temp);
+	}
+
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		//top of Cylinder
+		AddTri(vertex[(i + 1) % a_nSubdivisions] - vector3(0, 0, a_fHeight / 2), vertex[i] - vector3(0, 0, a_fHeight / 2), ZERO_V3 - vector3(0, 0, a_fHeight / 2));
+		//bottom of Cylinder
+		AddTri(ZERO_V3 + vector3(0, 0, a_fHeight/2), vertex[i] + vector3(0, 0, a_fHeight/2), vertex[(i + 1) % a_nSubdivisions] + vector3(0, 0, a_fHeight/2));
+		//sides of Cylinder
+		AddQuad(vertex[i] - vector3(0, 0, a_fHeight / 2), vertex[(i + 1) % a_nSubdivisions] - vector3(0, 0, a_fHeight / 2), vertex[i] + vector3(0, 0, a_fHeight/2), vertex[(i + 1) % a_nSubdivisions] + vector3(0, 0, a_fHeight/2));
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -115,7 +149,34 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	std::vector<vector3> outerVertex;
+	std::vector<vector3> innerVertex;
+	GLfloat outerTheta = 0;
+	GLfloat innerTheta = 0;
+	GLfloat outerDelta = static_cast<GLfloat>(2.0 * PI / static_cast<GLfloat>(a_nSubdivisions));
+	GLfloat innerDelta = static_cast<GLfloat>(2.0 * PI / static_cast<GLfloat>(a_nSubdivisions));
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		vector3 temp = vector3(cos(outerTheta) * a_fOuterRadius, sin(outerTheta) * a_fOuterRadius, 0.0f);
+		outerTheta += outerDelta;
+		outerVertex.push_back(temp);
+
+		vector3 temp2 = vector3(cos(innerTheta) * a_fInnerRadius, sin(innerTheta) * a_fInnerRadius, 0.0f);
+		innerTheta += innerDelta;
+		innerVertex.push_back(temp2);
+	}
+
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		//top of Tube
+		AddQuad(outerVertex[(i + 1) % a_nSubdivisions] - vector3(0, 0, a_fHeight / 2), outerVertex[i] - vector3(0, 0, a_fHeight / 2), innerVertex[(i + 1) % a_nSubdivisions] - vector3(0, 0, a_fHeight / 2), innerVertex[i] - vector3(0, 0, a_fHeight / 2));
+		//bottom of Tube
+		AddQuad(innerVertex[(i + 1) % a_nSubdivisions] + vector3(0, 0, a_fHeight / 2), innerVertex[i] + vector3(0, 0, a_fHeight / 2), outerVertex[(i + 1) % a_nSubdivisions] + vector3(0, 0, a_fHeight / 2), outerVertex[i] + vector3(0, 0, a_fHeight / 2));
+		//outer sides of Tube
+		AddQuad(outerVertex[i] - vector3(0, 0, a_fHeight / 2), outerVertex[(i + 1) % a_nSubdivisions] - vector3(0, 0, a_fHeight / 2), outerVertex[i] + vector3(0, 0, a_fHeight / 2), outerVertex[(i + 1) % a_nSubdivisions] + vector3(0, 0, a_fHeight / 2));
+		//inner sides of Tube
+		AddQuad(innerVertex[i] + vector3(0, 0, a_fHeight / 2), innerVertex[(i + 1) % a_nSubdivisions] + vector3(0, 0, a_fHeight / 2), innerVertex[i] - vector3(0, 0, a_fHeight / 2), innerVertex[(i + 1) % a_nSubdivisions] - vector3(0, 0, a_fHeight / 2));
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -172,7 +233,75 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	//arrays
+	std::vector<vector3> vertices;
+	std::vector<vector3> normals;
+	std::vector<GLfloat> texCoords;
+
+	//vertex positions
+	GLfloat x = 0;
+	GLfloat y = 0;
+	GLfloat z = 0;
+	GLfloat xy = 0;
+
+	//vertex normals
+	GLfloat nx = 0;
+	GLfloat ny = 0;
+	GLfloat nz = 0;
+	GLfloat length = 1.0f / a_fRadius;
+
+	//tex coords
+	GLfloat s = 0;
+	GLfloat t = 0;
+
+	//long/horizontal step
+	GLfloat longStep = 2 * PI / a_nSubdivisions;
+	//lat/vertical step
+	GLfloat latStep = PI / a_nSubdivisions;
+
+	//angles
+	GLfloat longAngle = 0;
+	GLfloat latAngle = 0;
+
+	//calculate the angles, normals, and vertices for each subdivision
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		latAngle = (PI / 2) - (i * latStep);
+		xy = a_fRadius * cosf(latAngle);
+		z = a_fRadius * sinf(latAngle);
+
+		for (int j = 0; j < a_nSubdivisions; j++)
+		{
+			longAngle = j * longStep;
+
+			//vertex positions
+			x = xy * cosf(longAngle);
+			y = xy * sinf(longAngle);
+
+			vector3 vertTemp = vector3(x, y, z);
+			vertices.push_back(vertTemp);
+
+			//vertex normals
+			nx = x * length;
+			ny = y * length;
+			nz = z * length;
+			
+			vector3 normalTemp = vector3(nx, ny, nz);
+			normals.push_back(normalTemp);
+
+			//vertex tex coord
+			s = (float)j / a_nSubdivisions;
+			t = (float)i / a_nSubdivisions;
+			texCoords.push_back(s);
+			texCoords.push_back(t);
+		}
+	}
+
+	//draw the sphere
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		AddTri(vertices[(i + 1) % a_nSubdivisions], vertices[(i + 2) % a_nSubdivisions], vertices[i]);
+	}
 	// -------------------------------
 
 	// Adding information about color
