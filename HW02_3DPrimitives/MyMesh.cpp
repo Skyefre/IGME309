@@ -208,7 +208,45 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	//equation for a torus is (c - sqRoot(x^2 + y^2))^2 + z^2 = a^2
+	std::vector<vector3 > vertex;
+
+	//angle from the origin to a point on the circle which the torus is centered around (u)
+	GLfloat theta = 0;
+
+	//angle from the line the torus is centered around to a point radius away from said line (v)
+	GLfloat delta = static_cast<GLfloat>(2.0 * PI / static_cast<GLfloat>(a_nSubdivisionsA));
+
+	//torus values for parametric equations
+	//a
+	GLfloat torusCenterToOuterRadius = 0.5 * (a_fOuterRadius - a_fInnerRadius);
+	//c
+	GLfloat torusCenterToOrigin = 0.5 * (a_fOuterRadius + a_fInnerRadius);
+
+	//parametric equations
+	GLfloat x = (torusCenterToOrigin + (torusCenterToOuterRadius * cos(delta))) * cos(theta);
+	GLfloat y = (torusCenterToOrigin + (torusCenterToOuterRadius * cos(delta))) * sin(theta);
+	GLfloat z = torusCenterToOuterRadius * sin(delta);
+
+	//put each point from the parametric equations into a vector3
+	for (int i = 0; i < a_nSubdivisionsB; i++)
+	{
+		vector3 temp = vector3(x, y, z);
+		theta += delta;
+		vertex.push_back(temp);
+	}
+
+	//I tried to use the parametric equation of each point (which I know at least are calculated correctly), but I don't
+	//think I'm using the correct angles in the equations. Beyond that, I think I might need to plug the points into the 
+	//actual torus equation (which I commented at the top of the variables) and not just directly into a vector like I am 
+	//currently doing above.
+	//Below I am trying to draw triangles so that I may see at least a circle revolving around the axis but I see nothing.
+	//I have no clue how I should go about drawing these, besides knowing it's easier to draw with quads, and that I need
+	//the quads not around the origin but around the center of the torus ring (if that makes sense?)
+	for (int i = 0; i < a_nSubdivisionsB; i++)
+	{
+		AddTri(vertex[(i + 1) % a_nSubdivisionsB], vertex[i], ZERO_V3);
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -236,7 +274,6 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	//arrays
 	std::vector<vector3> vertices;
 	std::vector<vector3> normals;
-	std::vector<GLfloat> texCoords;
 
 	//vertex positions
 	GLfloat x = 0;
@@ -245,14 +282,10 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	GLfloat xy = 0;
 
 	//vertex normals
-	GLfloat nx = 0;
-	GLfloat ny = 0;
-	GLfloat nz = 0;
+	GLfloat nx = 1.0f / a_fRadius;
+	GLfloat ny = 1.0f / a_fRadius;
+	GLfloat nz = 1.0f / a_fRadius;
 	GLfloat length = 1.0f / a_fRadius;
-
-	//tex coords
-	GLfloat s = 0;
-	GLfloat t = 0;
 
 	//long/horizontal step
 	GLfloat longStep = 2 * PI / a_nSubdivisions;
@@ -288,16 +321,14 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 			
 			vector3 normalTemp = vector3(nx, ny, nz);
 			normals.push_back(normalTemp);
-
-			//vertex tex coord
-			s = (float)j / a_nSubdivisions;
-			t = (float)i / a_nSubdivisions;
-			texCoords.push_back(s);
-			texCoords.push_back(t);
 		}
 	}
 
 	//draw the sphere
+	//this is me trying to draw the sphere. I know I need to extrude each vertex out from the origin along their normals
+	//in order to form the sphere shape but I honestly have no idea how to do that. This is me simply trying to draw Triangles
+	//so that I could at least see something but (clearly) nothing shows up. I have the vertex normals and each vertex 
+	//calculated up above but I just am unsure how to use them to actually draw the sphere.
 	for (int i = 0; i < a_nSubdivisions; i++)
 	{
 		AddTri(vertices[(i + 1) % a_nSubdivisions], vertices[(i + 2) % a_nSubdivisions], vertices[i]);
