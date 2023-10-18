@@ -51,6 +51,7 @@ void Application::Display(void)
 	m_pModelMngr->AddSkyboxToRenderList();
 
 	//calculate view and projection
+	//making this comment so I can make a push with the correct comment
 	switch (m_uProjection)
 	{
 	default:
