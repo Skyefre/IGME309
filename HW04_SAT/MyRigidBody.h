@@ -108,6 +108,12 @@ public:
 	bool IsColliding(MyRigidBody* const a_pOther);
 #pragma region Accessors
 	/*
+	Usage: compute dot product
+	Arguments: ---
+	Output: visibility
+	*/
+	float DotProduct(vector3 b, vector3 a);
+	/*
 	Usage: Gets visibility of bounding sphere
 	Arguments: ---
 	Output: visibility

@@ -6,7 +6,179 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	//TODO: Calculate the SAT algorithm I STRONGLY suggest you use the
 	//Real Time Collision detection algorithm for OBB here but feel free to
 	//implement your own solution.
-	return BTXs::eSATResults::SAT_NONE;
+
+	//radius of objects a and b
+	float ra, rb;
+
+	//rotation, absolute rotation, and local x,y and z axis matrices
+	matrix3 rot, absRot, aLocal, bLocal;
+
+	//translation vector
+	vector3 t;
+
+	//translate m4 global to m3 for obj a (equivalent of "u" in the book)
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			aLocal[i][j] = this->m_m4ToWorld[i][j];
+		}
+	}
+
+	//translate m4 global to m3 for obj b (equivalent of "u" in the book"
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			bLocal[i][j] = a_pOther->m_m4ToWorld[i][j];
+		}
+	}
+
+	//compute rotation matrix expressing b in a's coordinate frame
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			rot[i][j] = DotProduct(aLocal[i], bLocal[j]);
+		}
+	}
+
+	//translation vector t
+	t = a_pOther->GetCenterGlobal() - this->GetCenterGlobal();
+
+	//bring translation into a's coordinate frame
+	t = vector3(DotProduct(t, aLocal[0]), DotProduct(t, aLocal[1]), DotProduct(t, aLocal[2]));
+
+	// Compute common subexpressions. Add in an epsilon term to
+	// counteract arithmetic errors when two edges are parallel and
+	// their cross product is (near) null
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			absRot[i][j] = abs(rot[i][j]) + FLT_EPSILON;
+		}
+	}
+
+	// Test axes L = A0, L = A1, L = A2
+	for (int i = 0; i < 3; i++)
+	{
+		//get the halfwidth/radius of object a
+		ra = this->m_v3HalfWidth[i];
+
+		//use the halfwidth to calculate the radius of object b
+		rb = (a_pOther->m_v3HalfWidth[0] * absRot[i][0]) + (a_pOther->m_v3HalfWidth[1] * absRot[i][1]) + (a_pOther->m_v3HalfWidth[2] * absRot[i][2]);
+
+		//if the absolute value of the translation vector is greater than the sum of the radii, there is no collision
+		if (abs(t[i]) > ra + rb)
+		{
+			
+			return BTXs::eSATResults::SAT_NONE;
+		}
+	}
+
+	// Test axes L = B0, L = B1, L = B2
+	for (int i = 0; i < 3; i++)
+	{
+		//use the halfwidth to calculate the radius of object a
+		ra = (this->m_v3HalfWidth[0] * absRot[0][i]) + (this->m_v3HalfWidth[1] * absRot[1][i]) + (this->m_v3HalfWidth[2] * absRot[2][i]);
+		
+		//get the halfwidth/radius of object b
+		rb = a_pOther->m_v3HalfWidth[i];
+
+		//if the absolute value of the translation vector is greater than the sum of the radii, there is no collision
+		if (abs((t[0] * rot[0][i]) + (t[1] * rot[1][i]) + (t[2] * rot[2][i])) > ra + rb)
+		{
+			return BTXs::eSATResults::SAT_NONE;
+		}
+	}
+
+	//A0
+	// Test axis L = A0 x B0
+	ra = this->m_v3HalfWidth[1] * absRot[2][0] + this->m_v3HalfWidth[2] * absRot[1][0];
+	rb = a_pOther->m_v3HalfWidth[1] * absRot[0][2] + a_pOther->m_v3HalfWidth[2] * absRot[0][1];
+
+	if (abs((t[2] * rot[1][0]) - (t[1] * rot[2][0])) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_NONE;
+	}
+
+	// Test axis L = A0 x B1
+	ra = this->m_v3HalfWidth[1] * absRot[2][1] + this->m_v3HalfWidth[2] * absRot[1][1];
+	rb = a_pOther->m_v3HalfWidth[0] * absRot[0][2] + a_pOther->m_v3HalfWidth[2] * absRot[0][0];
+
+	if (abs((t[2] * rot[1][1]) - (t[1] * rot[2][1])) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_NONE;
+	}
+
+	// Test axis L = A0 x B2
+	ra = this->m_v3HalfWidth[1] * absRot[2][2] + this->m_v3HalfWidth[2] * absRot[1][2];
+	rb = a_pOther->m_v3HalfWidth[0] * absRot[0][1] + a_pOther->m_v3HalfWidth[1] * absRot[0][0];
+
+	if (abs((t[2] * rot[1][2]) - (t[1] * rot[2][2])) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_NONE;
+	}
+
+	//A1
+	// Test axis L = A1 x B0
+	ra = this->m_v3HalfWidth[0] * absRot[2][0] + this->m_v3HalfWidth[2] * absRot[0][0];
+	rb = a_pOther->m_v3HalfWidth[1] * absRot[1][2] + a_pOther->m_v3HalfWidth[2] * absRot[1][1];
+
+	if (abs((t[0] * rot[2][0]) - (t[2] * rot[0][0])) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_NONE;
+	}
+
+	// Test axis L = A1 x B1
+	ra = this->m_v3HalfWidth[0] * absRot[2][1] + this->m_v3HalfWidth[2] * absRot[0][1];
+	rb = a_pOther->m_v3HalfWidth[0] * absRot[1][2] + a_pOther->m_v3HalfWidth[2] * absRot[1][0];
+
+	if (abs((t[0] * rot[2][1]) - (t[2] * rot[0][1])) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_NONE;
+	}
+
+	// Test axis L = A1 x B2
+	ra = this->m_v3HalfWidth[0] * absRot[2][2] + this->m_v3HalfWidth[2] * absRot[0][2];
+	rb = a_pOther->m_v3HalfWidth[0] * absRot[1][1] + a_pOther->m_v3HalfWidth[1] * absRot[1][0];
+
+	if (abs((t[0] * rot[2][2]) - (t[2] * rot[0][2])) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_NONE;
+	}
+
+	//A2
+	// Test axis L = A2 x B0
+	ra = this->m_v3HalfWidth[0] * absRot[1][0] + this->m_v3HalfWidth[1] * absRot[0][0];
+	rb = a_pOther->m_v3HalfWidth[1] * absRot[2][2] + a_pOther->m_v3HalfWidth[2] * absRot[2][1];
+
+	if (abs((t[1] * rot[0][0]) - (t[0] * rot[1][0])) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_NONE;
+	}
+
+	// Test axis L = A2 x B1
+	ra = this->m_v3HalfWidth[0] * absRot[1][1] + this->m_v3HalfWidth[1] * absRot[0][1];
+	rb = a_pOther->m_v3HalfWidth[0] * absRot[2][2] + a_pOther->m_v3HalfWidth[2] * absRot[2][0];
+
+	if (abs((t[1] * rot[0][1]) - (t[0] * rot[1][1])) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_NONE;
+	}
+	
+	// Test axis L = A2 x B2
+	ra = this->m_v3HalfWidth[0] * absRot[1][2] + this->m_v3HalfWidth[1] * absRot[0][2];
+	rb = a_pOther->m_v3HalfWidth[0] * absRot[2][1] + a_pOther->m_v3HalfWidth[1] * absRot[2][0];
+
+	if (abs((t[1] * rot[0][2]) - (t[0] * rot[1][2])) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_NONE;
+	}
+
+	//No separating axis found, so there must be a collision
+	return BTXs::eSATResults::SAT_AX;
 }
 bool MyRigidBody::IsColliding(MyRigidBody* const a_pOther)
 {
@@ -21,7 +193,7 @@ bool MyRigidBody::IsColliding(MyRigidBody* const a_pOther)
 	{
 		uint nResult = SAT(a_pOther);
 
-		if (bColliding) //The SAT shown they are colliding
+		if (nResult != 0) //The SAT shown they are colliding
 		{
 			this->AddCollisionWith(a_pOther);
 			a_pOther->AddCollisionWith(this);
@@ -93,6 +265,17 @@ void MyRigidBody::Release(void)
 {
 	m_pModelMngr = nullptr;
 	ClearCollidingList();
+}
+
+//compute Dot Product
+float BTX::MyRigidBody::DotProduct(vector3 a, vector3 b)
+{
+	float product = 0;
+	for (int i = 0; i < a.length(); i++)
+	{
+		product += a[i] * b[i];
+	}
+	return product;
 }
 //Accessors
 bool MyRigidBody::GetVisibleBS(void) { return m_bVisibleBS; }
